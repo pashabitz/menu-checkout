@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQuery } from "react-query";
+import { NumberSelector } from "./components/number-selector";
 
 function Categories({ onSelect } : { onSelect: (categoryId: number) => void }) {
   const query = useQuery({
@@ -39,6 +40,7 @@ function Items({ category_id } : { category_id: number | null }) {
         <div key={item.name} className="flex gap-2 items-center">
           <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
           <span>{item.name}</span>
+          <NumberSelector />
         </div>
       ))}
     </div>

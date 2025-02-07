@@ -81,8 +81,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen py-2 px-8">
-      <header className="">
-        <span>Menu Checkout</span>
+      <header className="flex flex-row items-center justify-between">
+        <span>Food Court R Us</span>
         <Link href="/cart"><CartIndicator count={new Cart(cartItems).totalQuantiy} /></Link>
       </header>
       <main className="flex-grow overflow-auto">

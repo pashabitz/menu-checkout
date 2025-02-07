@@ -88,7 +88,7 @@ export default function Home() {
       <main className="flex-grow overflow-auto">
         <Categories onSelect={setSelectedCategory} />
         <Items category_id={selectedCategory} cart={new Cart(cartItems)} onChange={addToCart} />
-        <Link href="/cart"><button className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded">Checkout</button></Link>
+        <Link href="/cart"><button className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded">Go to Cart</button></Link>
       </main>
     </div>
   );

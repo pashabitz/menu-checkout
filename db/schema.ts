@@ -1,9 +1,9 @@
-import { integer, numeric, pgTable, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, real, timestamp } from "drizzle-orm/pg-core";
 
 export const ordersTable = pgTable("orders", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     created_at: timestamp().defaultNow(),
-    totalAmount: numeric().notNull(),
+    totalAmount: real().notNull(),
     cardLast4: integer().notNull(),
 });
 export const orderItemsTable = pgTable("order_items", {

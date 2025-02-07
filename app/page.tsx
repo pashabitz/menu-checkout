@@ -14,7 +14,6 @@ function Categories({ onSelect }: { onSelect: (categoryId: number) => void }) {
       return await response.json();
     }
   });
-  // TODO add a skeleton loader
   if (query.isLoading) return <div>Loading...</div>;
   return (
     <div className="flex gap-6 flex-wrap">

@@ -19,6 +19,9 @@ export class Cart {
     return this.itemsInCart.reduce((acc, item) => acc + item.quantity, 0);
   }
   get totalPrice() {
+    if (!this.menuItems) {
+        throw new Error("Menu items are not set");
+    };
     return this.itemsInCart.reduce((acc, item) => {
       const menuItem = this.menuItems?.find((i) => i.id === item.id);
       if (!menuItem) return acc;

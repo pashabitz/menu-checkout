@@ -23,9 +23,9 @@ function ItemsInCart({ renderedCartItems, disabled, onChange }: {
     onChange: (item: CartItem) => void
 }) {
     return (
-        <>
+        <div className="flex flex-col gap-6">
             {renderedCartItems.map((item: CartItem & MenuItem) => (
-                <div key={item.id} className="flex gap-2 items-center">
+                <div key={item.id} className="flex items-center">
                     <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
                     <span>{item.name}</span>
                     {!disabled && <span>${item.price.toFixed(2)}</span>}
@@ -38,7 +38,7 @@ function ItemsInCart({ renderedCartItems, disabled, onChange }: {
                     )}
                 </div>
             ))}
-        </>
+        </div>
     )
 }
 export default function CartPage() {
@@ -97,7 +97,7 @@ export default function CartPage() {
         }
     }
     if (renderedCartItems.length === 0) {
-        return <div>
+        return <div className="min-h-screen py-2 px-8">
             <div>Cart is empty</div>
             <BackToMenu />
         </div>;
@@ -127,17 +127,17 @@ export default function CartPage() {
                     <BackToMenu />
                     </>
                 ) : (
-                    <form onSubmit={onSubmit}>
+                    <form className="flex flex-col" onSubmit={onSubmit}>
                         <label className="text-lg font-bold">Credit Card Number</label>
                         <input
                             type="text"
-                            className="border border-gray-300 rounded p-2 w-full"
+                            className="border border-gray-300 rounded p-2 w-64"
                             disabled={true}
                             value={cardNumber}
                         />
                         <button
                             type="submit"
-                            className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+                            className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded w-64"
                         >
                             Place Order
                         </button>

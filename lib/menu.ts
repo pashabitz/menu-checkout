@@ -10,5 +10,5 @@ export function getMenuCategories() {
 export function getCategoryItems(categoryId: number) {
     const menu = getMenu();
     // TODO create type for item
-    return menu.items.filter((item: { category_id: number }) => item.category_id === parseInt(categoryId));
+    return menu.items.filter((item: { category_id: number }) => item.category_id === categoryId);
 }

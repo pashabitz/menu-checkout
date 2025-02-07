@@ -1,9 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { NumberSelector } from "./components/number-selector";
+import CartIndicator from "./components/cart-indicator";
+import { CartItem } from "@/lib/types";
+import { getLocalCart, storeLocalCart } from "@/lib/cart";
 
-function Categories({ onSelect } : { onSelect: (categoryId: number) => void }) {
+function Categories({ onSelect }: { onSelect: (categoryId: number) => void }) {
   const query = useQuery({
     queryKey: ['categories'], queryFn: async () => {
       const response = await fetch(`/api/categories`);
@@ -24,7 +27,21 @@ function Categories({ onSelect } : { onSelect: (categoryId: number) => void }) {
   )
 
 }
-function Items({ category_id } : { category_id: number | null }) {
+
+class Cart {
+  constructor(public items: CartItem[]) { }
+  getItemQuantity(itemId: number) {
+    return this.items.find((item) => item.id === itemId)?.quantity || 0;
+  }
+  get totalQuantiy() {
+    return this.items.reduce((acc, item) => acc + item.quantity, 0);
+  }
+}
+function Items({ category_id, cart, onChange }: {
+  category_id: number | null,
+  cart: Cart,
+  onChange: (item: CartItem) => void,
+}) {
   const query = useQuery({
     queryKey: ['items', category_id], queryFn: async () => {
       if (category_id === null) return [];
@@ -36,11 +53,14 @@ function Items({ category_id } : { category_id: number | null }) {
   if (query.data.length === 0) return;
   return (
     <div className="flex flex-col gap-6">
-      {query.data.map((item: { name: string; image_id: string }) => (
+      {query.data.map((item: { id: number, name: string; image_id: string, price: number }) => (
         <div key={item.name} className="flex gap-2 items-center">
           <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
           <span>{item.name}</span>
-          <NumberSelector />
+          <span>${item.price}</span>
+          <NumberSelector
+            initialValue={cart.getItemQuantity(item.id)}
+            onChange={(newValue) => onChange({ id: item.id, quantity: newValue })} />
         </div>
       ))}
     </div>
@@ -48,12 +68,33 @@ function Items({ category_id } : { category_id: number | null }) {
 }
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  useEffect(() => {
+    const existingCartItems = getLocalCart();
+    if (existingCartItems) {
+      setCartItems(existingCartItems);
+    }
+  }, []);
+  const addToCart = (item: { id: number, quantity: number }) => {
+    setCartItems((prev) => {
+      const otherItems = prev.filter((i) => i.id !== item.id);
+      const newCart = [...otherItems, item];
+      storeLocalCart(newCart);
+      return newCart;
+    });
+  }
+
+
+
   return (
     <div className="flex flex-col min-h-screen py-2 px-8">
-      <header className="">Menu Checkout</header>
+      <header className="">
+        <span>Menu Checkout</span>
+        <CartIndicator count={new Cart(cartItems).totalQuantiy} />
+      </header>
       <main className="flex-grow overflow-auto">
         <Categories onSelect={setSelectedCategory} />
-        <Items category_id={selectedCategory} />
+        <Items category_id={selectedCategory} cart={new Cart(cartItems)} onChange={addToCart} />
       </main>
       <footer className="">
         Copyright 2025 Menu Checkout

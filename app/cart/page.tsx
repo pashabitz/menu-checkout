@@ -1,10 +1,21 @@
 "use client";
-import { getLocalCart, storeLocalCart } from "@/lib/cart";
+import { Cart, getLocalCart, storeLocalCart } from "@/lib/cart";
 import { CartItem, MenuItem } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { NumberSelector } from "../components/number-selector";
 
+function BackToMenu() {
+    return (
+        <a href="/">
+            <button 
+            className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+            >
+                Back to Menu
+            </button>
+        </a>
+    )
+}
 export default function CartPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     useEffect(() => {
@@ -26,7 +37,10 @@ export default function CartPage() {
         }
     }
     if (renderedCartItems.length === 0) {
-        return <div>Your cart is empty</div>;
+        return <div>
+            <div>Cart is empty</div>
+            <BackToMenu />
+        </div>;
     }
     return (
         <div className="flex flex-col min-h-screen py-2 px-8">
@@ -38,7 +52,7 @@ export default function CartPage() {
                     <div key={item.id} className="flex gap-2 items-center">
                         <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
                         <span>{item.name}</span>
-                        <span>${item.price}</span>
+                        <span>${item.price.toFixed(2)}</span>
                         {/* <span>{item.id}</span> */}
                         <NumberSelector 
                             initialValue={item.quantity}
@@ -53,6 +67,8 @@ export default function CartPage() {
                             }} />
                     </div>
                 ))}
+                <div className="my-4 py-2 border-t border-gray-300">Total: ${new Cart(cartItems, query.data).totalPrice.toFixed(2)}</div>
+                <BackToMenu />
             </main>
         </div>
     )

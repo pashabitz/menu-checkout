@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import { NumberSelector } from "./components/number-selector";
 import CartIndicator from "./components/cart-indicator";
 import { CartItem } from "@/lib/types";
-import { getLocalCart, storeLocalCart } from "@/lib/cart";
+import { Cart, getLocalCart, storeLocalCart } from "@/lib/cart";
 
 function Categories({ onSelect }: { onSelect: (categoryId: number) => void }) {
   const query = useQuery({
@@ -28,15 +28,7 @@ function Categories({ onSelect }: { onSelect: (categoryId: number) => void }) {
 
 }
 
-class Cart {
-  constructor(public items: CartItem[]) { }
-  getItemQuantity(itemId: number) {
-    return this.items.find((item) => item.id === itemId)?.quantity || 0;
-  }
-  get totalQuantiy() {
-    return this.items.reduce((acc, item) => acc + item.quantity, 0);
-  }
-}
+
 function Items({ category_id, cart, onChange }: {
   category_id: number | null,
   cart: Cart,
@@ -57,7 +49,7 @@ function Items({ category_id, cart, onChange }: {
         <div key={item.name} className="flex gap-2 items-center">
           <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
           <span>{item.name}</span>
-          <span>${item.price}</span>
+          <span>${item.price.toFixed(2)}</span>
           <NumberSelector
             initialValue={cart.getItemQuantity(item.id)}
             onChange={(newValue) => onChange({ id: item.id, quantity: newValue })} />
@@ -90,11 +82,12 @@ export default function Home() {
     <div className="flex flex-col min-h-screen py-2 px-8">
       <header className="">
         <span>Menu Checkout</span>
-        <CartIndicator count={new Cart(cartItems).totalQuantiy} />
+        <a href="/cart"><CartIndicator count={new Cart(cartItems).totalQuantiy} /></a>
       </header>
       <main className="flex-grow overflow-auto">
         <Categories onSelect={setSelectedCategory} />
         <Items category_id={selectedCategory} cart={new Cart(cartItems)} onChange={addToCart} />
+        <a href="/cart"><button className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded">Checkout</button></a>
       </main>
     </div>
   );

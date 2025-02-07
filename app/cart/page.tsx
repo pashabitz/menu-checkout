@@ -17,15 +17,29 @@ function BackToMenu() {
         </Link>
     )
 }
-function ItemsInCart({ renderedCartItems, disabled, onChange }: {
-    renderedCartItems: (CartItem & MenuItem)[],
+function ItemsInCart({ cartItems, menuItems, disabled, onChange }: {
+    cartItems: CartItem[],
+    menuItems: MenuItem[],
     disabled: boolean,
     onChange: (item: CartItem) => void
 }) {
+    const renderedCartItems = [];
+    for (const item of cartItems.filter((i) => i.quantity > 0).sort((a, b) => a.id - b.id)) {
+        const itemDetails = menuItems.find((i: MenuItem) => i.id === item.id);
+        if (itemDetails) {
+            renderedCartItems.push({ ...itemDetails, quantity: item.quantity });
+        }
+    }
+    if (renderedCartItems.length === 0) {
+        return <div className="min-h-screen py-2 px-8">
+            <div>Cart is empty</div>
+            <BackToMenu />
+        </div>;
+    }
     return (
         <div className="flex flex-col gap-6">
             {renderedCartItems.map((item: CartItem & MenuItem) => (
-                <div key={item.id} className="flex items-center">
+                <div key={item.id} className="flex gap-2 items-center">
                     <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
                     <span>{item.name}</span>
                     {!disabled && <span>${item.price.toFixed(2)}</span>}
@@ -58,11 +72,9 @@ export default function CartPage() {
             })
         });
         if (!response.ok) {
-            // TODO render more nicely
             alert("Failed to place order");
             return;
         }
-        // TODO show order number
         const { orderId } = await response.json();
         setPlaced(true);
         setOrderId(orderId);
@@ -76,32 +88,22 @@ export default function CartPage() {
         setCardNumber(Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join(''));
     }, []);
 
-    const query = useQuery({
+    const menuItemsQuery = useQuery({
         queryKey: ['items'], queryFn: async () => {
             const response = await fetch(`/api/items`);
             return await response.json();
         }
     });
     useEffect(() => {
-        if (query.data) {
-            const totalAmount = new Cart(cartItems, query.data).totalPrice;
+        if (menuItemsQuery.data) {
+            const totalAmount = new Cart(cartItems, menuItemsQuery.data).totalPrice;
             setTotalAmount(totalAmount);
         }
-    }, [query.data, cartItems]);
-    if (query.isLoading) return <div>Loading...</div>;
-    const renderedCartItems = [];
-    for (const item of cartItems.filter((i) => i.quantity > 0).sort((a, b) => a.id - b.id)) {
-        const itemDetails = query.data.find((i: CartItem) => i.id === item.id);
-        if (itemDetails) {
-            renderedCartItems.push({ ...itemDetails, quantity: item.quantity });
-        }
-    }
-    if (renderedCartItems.length === 0) {
-        return <div className="min-h-screen py-2 px-8">
-            <div>Cart is empty</div>
-            <BackToMenu />
-        </div>;
-    }
+    }, [menuItemsQuery.data, cartItems]);
+
+    if (menuItemsQuery.isLoading) return <div>Loading...</div>;
+
+    
     return (
         <div className="flex flex-col min-h-screen py-2 px-8">
             <header className="">
@@ -109,7 +111,8 @@ export default function CartPage() {
             </header>
             <main className="flex-grow overflow-auto">
                 <ItemsInCart
-                renderedCartItems={renderedCartItems}
+                cartItems={cartItems}
+                menuItems={menuItemsQuery.data}
                 disabled={placed}
                 onChange={(item) => {
                     setCartItems((prev) => {

@@ -5,6 +5,7 @@ import { NumberSelector } from "./components/number-selector";
 import CartIndicator from "./components/cart-indicator";
 import { CartItem } from "@/lib/types";
 import { Cart, getLocalCart, storeLocalCart } from "@/lib/cart";
+import Link from "next/link";
 
 function Categories({ onSelect }: { onSelect: (categoryId: number) => void }) {
   const query = useQuery({
@@ -82,12 +83,12 @@ export default function Home() {
     <div className="flex flex-col min-h-screen py-2 px-8">
       <header className="">
         <span>Menu Checkout</span>
-        <a href="/cart"><CartIndicator count={new Cart(cartItems).totalQuantiy} /></a>
+        <Link href="/cart"><CartIndicator count={new Cart(cartItems).totalQuantiy} /></Link>
       </header>
       <main className="flex-grow overflow-auto">
         <Categories onSelect={setSelectedCategory} />
         <Items category_id={selectedCategory} cart={new Cart(cartItems)} onChange={addToCart} />
-        <a href="/cart"><button className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded">Checkout</button></a>
+        <Link href="/cart"><button className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded">Checkout</button></Link>
       </main>
     </div>
   );

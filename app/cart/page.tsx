@@ -4,16 +4,17 @@ import { CartItem, MenuItem } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { NumberSelector } from "../components/number-selector";
+import Link from "next/link";
 
 function BackToMenu() {
     return (
-        <a href="/">
+        <Link href="/">
             <button
                 className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded"
             >
                 Back to Menu
             </button>
-        </a>
+        </Link>
     )
 }
 function ItemsInCart({ renderedCartItems, disabled, onChange }: {

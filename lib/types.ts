@@ -9,3 +9,8 @@ export type MenuItem = {
     name: string;
     price: number;
 };
+export type Order = {
+    items: CartItem[];
+    totalAmount: number;
+    cardLast4: number;
+};

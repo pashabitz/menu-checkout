@@ -8,26 +8,85 @@ import { NumberSelector } from "../components/number-selector";
 function BackToMenu() {
     return (
         <a href="/">
-            <button 
-            className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+            <button
+                className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded"
             >
                 Back to Menu
             </button>
         </a>
     )
 }
+function ItemsInCart({ renderedCartItems, disabled, onChange }: {
+    renderedCartItems: (CartItem & MenuItem)[],
+    disabled: boolean,
+    onChange: (item: CartItem) => void
+}) {
+    return (
+        <>
+            {renderedCartItems.map((item: CartItem & MenuItem) => (
+                <div key={item.id} className="flex gap-2 items-center">
+                    <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
+                    <span>{item.name}</span>
+                    {!disabled && <span>${item.price.toFixed(2)}</span>}
+                    {disabled ? (
+                        <span>({item.quantity})</span>
+                    ) : (
+                        <NumberSelector
+                            initialValue={item.quantity}
+                            onChange={(newValue) => onChange({ id: item.id, quantity: newValue })} />
+                    )}
+                </div>
+            ))}
+        </>
+    )
+}
 export default function CartPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [placed, setPlaced] = useState(false);
+    const [cardNumber, setCardNumber] = useState("");
+    const [orderId, setOrderId] = useState("");
+    const [totalAmount, setTotalAmount] = useState(0);
+    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        const response = await fetch('/api/order', {
+            method: 'POST',
+            body: JSON.stringify({
+                cartItems,
+                cardLast4: cardNumber.slice(-4),
+                totalAmount,
+            })
+        });
+        if (!response.ok) {
+            // TODO render more nicely
+            alert("Failed to place order");
+            return;
+        }
+        // TODO show order number
+        const { orderId } = await response.json();
+        setPlaced(true);
+        setOrderId(orderId);
+        storeLocalCart([]);
+    }
+
     useEffect(() => {
         const cart = getLocalCart();
         setCartItems(cart);
+        // random card number
+        setCardNumber(Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join(''));
     }, []);
+
     const query = useQuery({
         queryKey: ['items'], queryFn: async () => {
             const response = await fetch(`/api/items`);
             return await response.json();
         }
     });
+    useEffect(() => {
+        if (query.data) {
+            const totalAmount = new Cart(cartItems, query.data).totalPrice;
+            setTotalAmount(totalAmount);
+        }
+    }, [query.data, cartItems]);
     if (query.isLoading) return <div>Loading...</div>;
     const renderedCartItems = [];
     for (const item of cartItems.filter((i) => i.quantity > 0).sort((a, b) => a.id - b.id)) {
@@ -48,27 +107,42 @@ export default function CartPage() {
                 <span>Cart</span>
             </header>
             <main className="flex-grow overflow-auto">
-                {renderedCartItems.map((item: CartItem & MenuItem) => (
-                    <div key={item.id} className="flex gap-2 items-center">
-                        <img src={`/menu/${item.image_id}.jpg`} alt={item.name} className="w-24 h-24 object-cover" />
-                        <span>{item.name}</span>
-                        <span>${item.price.toFixed(2)}</span>
-                        {/* <span>{item.id}</span> */}
-                        <NumberSelector 
-                            initialValue={item.quantity}
-                            onChange={(newValue) => {
-                                // TODO reuse - this is also in homepage
-                                setCartItems((prev) => {
-                                    const otherItems = prev.filter((i) => i.id !== item.id);
-                                    const newCart = [...otherItems, { id: item.id, quantity: newValue }];
-                                    storeLocalCart(newCart);
-                                    return newCart;
-                                });
-                            }} />
-                    </div>
-                ))}
-                <div className="my-4 py-2 border-t border-gray-300">Total: ${new Cart(cartItems, query.data).totalPrice.toFixed(2)}</div>
-                <BackToMenu />
+                <ItemsInCart
+                renderedCartItems={renderedCartItems}
+                disabled={placed}
+                onChange={(item) => {
+                    setCartItems((prev) => {
+                        const otherItems = prev.filter((i) => i.id !== item.id);
+                        const newCart = [...otherItems, item];
+                        storeLocalCart(newCart);
+                        return newCart;
+                    });
+                }} />
+                <div className="my-4 py-2 border-t border-gray-300">Total: ${totalAmount.toFixed(2)}</div>
+                
+                {placed ? (
+                    <>
+                    <div className="text-lg font-bold text-green-500">Order #{orderId} Placed.</div>
+                    <BackToMenu />
+                    </>
+                ) : (
+                    <form onSubmit={onSubmit}>
+                        <label className="text-lg font-bold">Credit Card Number</label>
+                        <input
+                            type="text"
+                            className="border border-gray-300 rounded p-2 w-full"
+                            disabled={true}
+                            value={cardNumber}
+                        />
+                        <button
+                            type="submit"
+                            className="text-lg font-bold mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+                        >
+                            Place Order
+                        </button>
+                    </form>
+                )}
+
             </main>
         </div>
     )

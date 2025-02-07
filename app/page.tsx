@@ -96,9 +96,6 @@ export default function Home() {
         <Categories onSelect={setSelectedCategory} />
         <Items category_id={selectedCategory} cart={new Cart(cartItems)} onChange={addToCart} />
       </main>
-      <footer className="">
-        Copyright 2025 Menu Checkout
-      </footer>
     </div>
   );
 }

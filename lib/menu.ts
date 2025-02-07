@@ -12,3 +12,7 @@ export function getCategoryItems(categoryId: number) {
     // TODO create type for item
     return menu.items.filter((item: { category_id: number }) => item.category_id === categoryId);
 }
+export function getItems() {
+    const menu = getMenu();
+    return menu.items;
+}

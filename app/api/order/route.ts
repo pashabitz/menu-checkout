@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
         return new Response("No items in cart", { status: 400 });
     }
     try {
-        const orderId = await createOrder({ items: cartItems, cardLast4, totalAmount });
+        const orderId = await createOrder({ items: cartItems, cardLast4, totalAmount: computedAmount });
         return new Response(JSON.stringify({ orderId}));
     } catch (e) {
         console.error(e);
